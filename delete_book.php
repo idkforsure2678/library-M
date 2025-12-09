@@ -1,8 +1,13 @@
 <?php
-include "db.php";
+require "db.php";
 
-$id = $_POST["id"];
-$conn->query("DELETE FROM books WHERE id=$id");
+$id = $_POST["id"] ?? "";
 
-echo "success";
+if ($id === "") {
+    http_response_code(400);
+    exit("Invalid book ID");
+}
+
+$stmt = $pdo->prepare("DELETE FROM books WHERE id=?");
+$stmt->execute([$id]);
 ?>
