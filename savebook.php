@@ -1,17 +1,21 @@
 <?php
-include "db.php";
+require "db.php";
 
-$title = $_POST["title"];
-$author = $_POST["author"];
-$year = $_POST["year"];
-$id = $_POST["id"];
+$title  = trim($_POST["title"] ?? "");
+$author = trim($_POST["author"] ?? "");
+$year   = trim($_POST["year"] ?? "");
+$id     = $_POST["id"] ?? "";
 
-if ($id == "") {
-    $sql = "INSERT INTO books (title, author, year) VALUES ('$title', '$author', '$year')";
-} else {
-    $sql = "UPDATE books SET title='$title', author='$author', year='$year' WHERE id=$id";
+if ($title === "" || $author === "") {
+    http_response_code(400);
+    exit("Missing required fields");
 }
 
-$conn->query($sql);
-echo "success";
+if ($id === "") {
+    $stmt = $pdo->prepare("INSERT INTO books (title, author, year) VALUES (?, ?, ?)");
+    $stmt->execute([$title, $author, $year]);
+} else {
+    $stmt = $pdo->prepare("UPDATE books SET title=?, author=?, year=? WHERE id=?");
+    $stmt->execute([$title, $author, $year, $id]);
+}
 ?>
