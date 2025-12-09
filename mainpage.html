@@ -1,70 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Library M - CRUD System</title>
+<meta charset="UTF-8">
+<title>Library M - Book Management</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f1f1f1;
-            margin: 0;
-        }
-        header {
-            background: #2c3e50;
-            padding: 15px;
-            text-align: center;
-            color: white;
-            font-size: 28px;
-        }
-        .container {
-            width: 90%;
-            margin: auto;
-            padding: 20px;
-            background: white;
-            margin-top: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        input, button {
-            padding: 10px;
-            margin: 5px;
-        }
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #2980b9;
-        }
-        .edit-btn {
-            background: #27ae60;
-        }
-        .edit-btn:hover {
-            background: #1e8449;
-        }
-        .delete-btn {
-            background: #e74c3c;
-        }
-        .delete-btn:hover {
-            background: #c0392b;
-        }
-        table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #999;
-            padding: 10px;
-            text-align: center;
-        }
-    </style>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f1f1f1;
+    margin: 0;
+}
+header {
+    background: #2c3e50;
+    padding: 15px;
+    text-align: center;
+    color: white;
+    font-size: 28px;
+}
+.container {
+    width: 90%;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+}
+input, button {
+    padding: 10px;
+    margin: 5px;
+}
+button {
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.edit-btn { background: #27ae60; }
+.delete-btn { background: #e74c3c; }
+.tab-btn { background: #8e44ad; }
+table {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid #999;
+    padding: 10px;
+    text-align: center;
+}
+.tab { margin-bottom: 10px; }
+</style>
 </head>
-
 <body>
 
 <header>📚 Library M</header>
@@ -72,246 +59,190 @@
 <div class="container">
 
     <h2>Add / Update Book</h2>
-
     <input type="hidden" id="editIndex">
-
     <input type="text" id="title" placeholder="Book Title">
     <input type="text" id="author" placeholder="Author">
-    <input type="text" id="year" placeholder="Year">
+    <input type="number" id="year" placeholder="Year">
     <button onclick="saveBook()">Save Book</button>
 
-    <h2>Search Book</h2>
-    <input type="text" id="search" placeholder="Search by title..." onkeyup="searchBook()">
+    <h2>Search</h2>
+    <input type="text" id="search" placeholder="Search by title..." onkeyup="searchTable()">
 
-    <h2>Book List</h2>
+    <div class="tab">
+        <button class="tab-btn" onclick="showSection('availableSection')">Available Books</button>
+        <button class="tab-btn" onclick="showSection('borrowedSection')">Borrowed Books</button>
+        <button class="tab-btn" onclick="showSection('logSection')">Borrow/Return Logs</button>
+    </div>
 
-    <table id="bookTable">
-        <tr>
-            <th>#</th>
-            <th>Book Title</th>
-            <th>Author</th>
-            <th>Year</th>
-            <th>Edit</th>
-            <th>Delete</th>
-            <th>Borrow</th>
-        </tr>
-    </table>
+    <!-- Sections -->
+    <div id="availableSection">
+        <h2>Available Books</h2>
+        <table id="bookTable"></table>
+    </div>
 
-    <h2>Borrowed Books</h2>
-    <table id="borrowedTable">
-        <tr>
-            <th>#</th>
-            <th>Book Title</th>
-            <th>Author</th>
-            <th>Year</th>
-            <th>Borrower</th>
-            <th>Contact</th>
-            <th>Return</th>
-        </tr>
-    </table>
-</div>
+    <div id="borrowedSection" style="display:none;">
+        <h2>Borrowed Books</h2>
+        <table id="borrowedTable"></table>
+    </div>
 
-<script>
-    let books = [];
-
-    function fetchBooks() {
-        fetch("get_book.php")
-        .then(res => res.json())
-        .then(data => {
-            books = data;
-            displayBooks(books);
-            displayBorrowedBooks(books);
-        });
-    }
-
-    function saveBook() {
-        let title = document.getElementById("title").value;
-        let author = document.getElementById("author").value;
-        let year = document.getElementById("year").value;
-        let id = document.getElementById("editIndex").value;
-
-        if (title === "" || author === "" || year === "") {
-            alert("Please fill out all fields!");
-            return;
-        }
-
-        let formData = new FormData();
-        formData.append("title", title);
-        formData.append("author", author);
-        formData.append("year", year);
-        formData.append("id", id);
-
-        fetch("savebook.php", {
-            method: "POST",
-            body: formData
-        }).then(() => {
-            clearForm();
-            fetchBooks();
-        });
-    }
-
-    function clearForm() {
-        document.getElementById("title").value = "";
-        document.getElementById("author").value = "";
-        document.getElementById("year").value = "";
-        document.getElementById("editIndex").value = "";
-    }
-
-    function displayBooks(books) {
-        let table = document.getElementById("bookTable");
-        table.innerHTML = `
-            <tr>
-                <th>#</th>
-                <th>Book Title</th>
-                <th>Author</th>
-                <th>Year</th>
-                <th>Edit</th>
-                <th>Delete</th>
-                <th>Borrow</th>
-            </tr>
-        `;
-
-        books.forEach((book, index) => {
-            if (book.borrowed == 0) {
-                table.innerHTML += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${book.title}</td>
-                        <td>${book.author}</td>
-                        <td>${book.year}</td>
-                        <td><button class="edit-btn" onclick="editBook(${book.id})">Edit</button></td>
-                        <td><button class="delete-btn" onclick="deleteBook(${book.id})">Delete</button></td>
-                        <td><button onclick="openBorrowModal(${book.id})">Borrow</button></td>
-                    </tr>
-                `;
-            }
-        });
-    }
-
-    function displayBorrowedBooks(books) {
-        let table = document.getElementById("borrowedTable");
-        table.innerHTML = `
-            <tr>
-                <th>#</th>
-                <th>Book Title</th>
-                <th>Author</th>
-                <th>Year</th>
-                <th>Borrower</th>
-                <th>Contact</th>
-                <th>Return</th>
-            </tr>
-        `;
-
-        books.forEach((book, index) => {
-            if (book.borrowed == 1) {
-                table.innerHTML += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${book.title}</td>
-                        <td>${book.author}</td>
-                        <td>${book.year}</td>
-                        <td>${book.borrower_name}</td>
-                        <td>${book.borrower_contact}</td>
-                        <td><button onclick="returnBook(${book.id})">Return</button></td>
-                    </tr>
-                `;
-            }
-        });
-    }
-
-    function editBook(id) {
-        let book = books.find(b => b.id == id);
-
-        document.getElementById("title").value = book.title;
-        document.getElementById("author").value = book.author;
-        document.getElementById("year").value = book.year;
-        document.getElementById("editIndex").value = book.id;
-    }
-
-    function deleteBook(id) {
-        let formData = new FormData();
-        formData.append("id", id);
-
-        fetch("delete_book.php", {
-            method: "POST",
-            body: formData
-        }).then(() => fetchBooks());
-    }
-
-    let borrowIndex = null;
-
-    function openBorrowModal(id) {
-        borrowIndex = id;
-        document.getElementById("borrowerName").value = "";
-        document.getElementById("borrowerContact").value = "";
-        document.getElementById("borrowerModal").style.display = "flex";
-    }
-
-    function closeModal() {
-        document.getElementById("borrowerModal").style.display = "none";
-    }
-
-    function confirmBorrow() {
-        const name = document.getElementById("borrowerName").value.trim();
-        const contact = document.getElementById("borrowerContact").value.trim();
-
-        if (name === "" || contact === "") {
-            alert("Please enter borrower name and contact.");
-            return;
-        }
-
-        let formData = new FormData();
-        formData.append("id", borrowIndex);
-        formData.append("name", name);
-        formData.append("contact", contact);
-
-        fetch("borrow_book.php", {
-            method: "POST",
-            body: formData
-        }).then(() => {
-            closeModal();
-            fetchBooks();
-        });
-    }
-
-    function returnBook(id) {
-        let formData = new FormData();
-        formData.append("id", id);
-
-        fetch("return_book.php", {
-            method: "POST",
-            body: formData
-        }).then(() => fetchBooks());
-    }
-
-    function searchBook() {
-        let search = document.getElementById("search").value.toLowerCase();
-
-        let bookRows = document.getElementById("bookTable").rows;
-        for (let i = 1; i < bookRows.length; i++) {
-            let title = bookRows[i].cells[1].innerText.toLowerCase();
-            bookRows[i].style.display = title.includes(search) ? "" : "none";
-        }
-
-        let borrowedRows = document.getElementById("borrowedTable").rows;
-        for (let i = 1; i < borrowedRows.length; i++) {
-            let title = borrowedRows[i].cells[1].innerText.toLowerCase();
-            borrowedRows[i].style.display = title.includes(search) ? "" : "none";
-        }
-    }
-
-    window.onload = fetchBooks;
-</script>
-
-<div id="borrowerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
-    <div style="background:white; padding:20px; border-radius:10px; width:300px;">
-        <h3>Borrower Info</h3>
-        <input type="text" id="borrowerName" placeholder="Name" style="width:80%; margin-bottom:10px;">
-        <input type="text" id="borrowerContact" placeholder="Contact" style="width:80%; margin-bottom:10px;">
-        <button onclick="confirmBorrow()">Confirm</button>
-        <button onclick="closeModal()" style="background:#e74c3c; margin-left:10px;">Cancel</button>
+    <div id="logSection" style="display:none;">
+        <h2>Borrow / Return Log</h2>
+        <table id="logTable"></table>
     </div>
 </div>
 
+<!-- Borrow Modal -->
+<div id="borrowerModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); justify-content:center; align-items:center;">
+    <div style="background:white; padding:20px; border-radius:10px;">
+        <h3>Borrow Book</h3>
+        <input type="text" id="borrowerName" placeholder="Borrower Name">
+        <br><br>
+        <button onclick="confirmBorrow()">Confirm</button>
+        <button onclick="closeModal()" style="background:#e74c3c;">Cancel</button>
+    </div>
+</div>
+
+<script>
+let books = [];
+let borrowId = null;
+
+// Show section tab
+function showSection(id) {
+    ["availableSection","borrowedSection","logSection"].forEach(s=>{
+        document.getElementById(s).style.display = (s===id) ? "" : "none";
+    });
+    if(id === "logSection") fetchLogs();
+}
+
+// Fetch books from server
+function fetchBooks() {
+    fetch("get_book.php")
+        .then(res => res.json())
+        .then(data => {
+            books = data;
+            renderBookTables();
+        });
+}
+
+// Render Available and Borrowed tables
+function renderBookTables() {
+    const available = document.getElementById("bookTable");
+    const borrowed = document.getElementById("borrowedTable");
+
+    available.innerHTML = `<tr><th>#</th><th>Title</th><th>Author</th><th>Year</th><th>Edit</th><th>Delete</th><th>Borrow</th></tr>`;
+    borrowed.innerHTML = `<tr><th>#</th><th>Title</th><th>Author</th><th>Year</th><th>Borrower</th><th>Return</th></tr>`;
+
+    books.forEach((b,i)=>{
+        if(b.borrowed==0){
+            available.innerHTML += `<tr>
+                <td>${i+1}</td><td>${b.title}</td><td>${b.author}</td><td>${b.year}</td>
+                <td><button class="edit-btn" onclick="editBook(${b.id})">Edit</button></td>
+                <td><button class="delete-btn" onclick="deleteBook(${b.id})">Delete</button></td>
+                <td><button onclick="openBorrow(${b.id})">Borrow</button></td>
+            </tr>`;
+        } else {
+            borrowed.innerHTML += `<tr>
+                <td>${i+1}</td><td>${b.title}</td><td>${b.author}</td><td>${b.year}</td>
+                <td>${b.borrower_name}</td>
+                <td><button onclick="returnBook(${b.id})">Return</button></td>
+            </tr>`;
+        }
+    });
+}
+
+// Save or update book
+function saveBook() {
+    const fd = new FormData();
+    fd.append("title", title.value);
+    fd.append("author", author.value);
+    fd.append("year", year.value);
+    fd.append("id", editIndex.value);
+
+    fetch("savebook.php",{method:"POST",body:fd})
+        .then(()=>{ clearForm(); fetchBooks(); });
+}
+
+// Edit book
+function editBook(id) {
+    const b = books.find(x=>x.id==id);
+    title.value=b.title;
+    author.value=b.author;
+    year.value=b.year;
+    editIndex.value=b.id;
+}
+
+// Delete book
+function deleteBook(id) {
+    if(!confirm("Delete this book?")) return;
+    const fd = new FormData();
+    fd.append("id",id);
+    fetch("delete_book.php",{method:"POST",body:fd}).then(fetchBooks);
+}
+
+// Borrow modal
+function openBorrow(id) {
+    borrowId=id;
+    borrowerName.value="";
+    borrowerModal.style.display="flex";
+}
+
+function closeModal() { borrowerModal.style.display="none"; }
+
+function confirmBorrow() {
+    if(borrowerName.value.trim()==="") return alert("Enter borrower name");
+    const fd = new FormData();
+    fd.append("id",borrowId);
+    fd.append("borrower_name",borrowerName.value);
+
+    fetch("borrow_book.php",{method:"POST",body:fd})
+        .then(()=>{ closeModal(); fetchBooks(); });
+}
+
+// Return book
+function returnBook(id){
+    const fd = new FormData();
+    fd.append("id",id);
+    fetch("return_book.php",{method:"POST",body:fd}).then(fetchBooks);
+}
+
+// Clear input form
+function clearForm(){ title.value=author.value=year.value=editIndex.value=""; }
+
+// Search in tables
+function searchTable() {
+    const q = search.value.toLowerCase();
+    [...document.querySelectorAll("table")].forEach(t=>{
+        [...t.querySelectorAll("tr")].forEach((r,i)=>{
+            if(i===0) return;
+            r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none";
+        });
+    });
+}
+
+// Fetch log from server
+function fetchLogs(){
+    fetch("get_logs.php")
+        .then(res=>res.json())
+        .then(data=>renderLogTable(data));
+}
+
+function renderLogTable(logs){
+    const logTable=document.getElementById("logTable");
+    logTable.innerHTML=`<tr><th>#</th><th>Title</th><th>Author</th><th>Borrower</th><th>Action</th><th>Date / Time</th></tr>`;
+    logs.forEach((l,i)=>{
+        logTable.innerHTML+=`<tr>
+            <td>${i+1}</td>
+            <td>${l.title}</td>
+            <td>${l.author}</td>
+            <td>${l.borrower_name}</td>
+            <td>${l.action}</td>
+            <td>${l.action_date}</td>
+        </tr>`;
+    });
+}
+
+// Load data
+window.onload = () => { fetchBooks(); fetchLogs(); }
+</script>
 </body>
 </html>
