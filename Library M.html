@@ -4,105 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library M</title>
-</head>
-<body style="padding: 0 0 0 0; margin: 0 0 0 0;">
-    <div id="main-page" style="min-width: 100vh; height: 100vh; padding: 0 0 0 0; display: flex; justify-content: center; align-items: center; background-color: #2c3e50;" >
-        <main id="main" style="width: 65%;  height: 70%; background-color: rgb(245, 245, 245); border: dashed black; border-radius: 1%;">
-            <div>
-                <h1 id="title">
-                    📚 Library M
-                </h1>
-            </div>
-            <div id="enter">
-                <button id="login-button" onclick="login()">
-                    Enter
-                </button>
-            </div>
-            <div id="login_form">
-                <input type="text" placeholder="Username" id="user" style="margin: 0 0 20px 0; padding: 10px;">
-                <input type="text" placeholder="Password" id="pass" style="padding: 10px;">
-                <button id="enter" style="margin-top: 20px; padding: 10px;" onclick="enter()">
-                    LOGIN
-                </button>
-            </div>
-        </main>
-    </div>
 
     <style>
-        body{
+        body {
+            margin: 0;
             font-family: Arial, sans-serif;
+            background-color: #2c3e50;
         }
-        #main 
-        {
-            display:flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        #title
-        {
-            color: #000000;
-            font-size: 100px;
-        }
-        #login-button
-        {   
-            height: 50px;
-            width: 200px; 
-            border-radius: 5%;
-            border-style: outset;
-            border-width: 1px 1px 1px 1px;
-        }
-        #login_form
-        {
+
+        #main-page {
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-            visibility: hidden;
-        }
-        input 
-        {
-            transition: border 0.3s ease;
         }
 
+        #main {
+            width: 65%;
+            max-width: 600px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        #title {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #login_form {
+            margin-top: 20px;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+        }
     </style>
-    <script>
-        function login() {
-            document.getElementById("title").style.fontSize = "xxx-large";
-            document.getElementById("enter").style.visibility = "hidden";
-            document.getElementById("login_form").style.visibility = "visible";
+</head>
+<body>
+
+<div id="main-page">
+    <main id="main">
+        <h1 id="title">📚 Library M</h1>
+
+        <button id="login-button" onclick="showLogin()">Enter</button>
+
+        <form id="login_form" onsubmit="login(event)">
+            <input type="text" id="user" placeholder="Username">
+            <input type="password" id="pass" placeholder="Password">
+            <button type="submit">LOGIN</button>
+        </form>
+    </main>
+</div>
+
+<script>
+    function showLogin() {
+        document.getElementById("login-button").style.display = "none";
+        document.getElementById("login_form").style.display = "flex";
+        document.getElementById("title").style.fontSize = "48px";
+    }
+
+    function login(e) {
+        e.preventDefault();
+
+        const user = document.getElementById("user");
+        const pass = document.getElementById("pass");
+
+        user.style.border = "";
+        pass.style.border = "";
+
+        if (user.value.trim() === "" || pass.value.trim() === "") {
+            if (user.value.trim() === "") user.style.border = "2px solid red";
+            if (pass.value.trim() === "") pass.style.border = "2px solid red";
+            return;
         }
-    
-        function enter() {
-            const username = document.getElementById("user");
-            const password = document.getElementById("pass");
-    
-            let valid = true;
-    
-            username.style.border = "";
-            password.style.border = "";
-    
-            if (username.value.trim() === "") {
-                username.style.border = "2px solid red";
-                valid = false;
-            }
-    
-            if (password.value.trim() === "") {
-                password.style.border = "2px solid red";
-                valid = false;
-            }
-    
-            if (valid) {
-                if (username.value === "admin" && password.value === "admin") {
-                    window.open("mainpage.html");
-                } else {
-                    alert("Invalid username or password.");
-                    username.style.border = "2px solid red";
-                    password.style.border = "2px solid red";
-                }
-            }
+
+        /* SIMPLE AUTH (can be replaced with PHP later) */
+        if (user.value === "admin" && pass.value === "admin") {
+            window.location.href = "mainpage.html";
+        } else {
+            alert("Invalid username or password");
+            user.style.border = "2px solid red";
+            pass.style.border = "2px solid red";
         }
-    </script>
-    
+    }
+</script>
+
 </body>
 </html>
