@@ -1,14 +1,26 @@
 <?php
-include "db.php";
+require "db.php";
 
-$id = $_POST["id"];
-$name = $_POST["name"];
-$contact = $_POST["contact"];
+$id = $_POST["id"] ?? "";
+$borrower = trim($_POST["borrower_name"] ?? "");
 
-$sql = "UPDATE books 
-        SET borrower_name='$name', borrower_contact='$contact', borrowed=1 
-        WHERE id=$id";
+if ($id === "" || $borrower === "") {
+    http_response_code(400);
+    exit("Invalid borrow data");
+}
 
-$conn->query($sql);
-echo "success";
+/* Mark book as borrowed */
+$stmt = $pdo->prepare("
+    UPDATE books 
+    SET borrowed = 1, borrower_name = ? 
+    WHERE id = ?
+");
+$stmt->execute([$borrower, $id]);
+
+/* Log borrow action */
+$log = $pdo->prepare("
+    INSERT INTO borrow_log (book_id, borrower_name, action)
+    VALUES (?, ?, 'borrow')
+");
+$log->execute([$id, $borrower]);
 ?>
