@@ -1,12 +1,7 @@
 <?php
-include "db.php";
+require "db.php";
 
-$result = $conn->query("SELECT * FROM books");
-$books = [];
-
-while ($row = $result->fetch_assoc()) {
-    $books[] = $row;
-}
+$stmt = $pdo->query("SELECT * FROM books ORDER BY id DESC");
+$books = $stmt->fetchAll();
 
 echo json_encode($books);
-?>
